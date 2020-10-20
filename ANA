@@ -9,3 +9,120 @@ int count_unknown_squares(const int board[MAX_SIZE][MAX_SIZE], int size) {
     }
     return unknownSquares;
 }
+
+
+//SOLVE FUNCTIONS
+
+void solve_three_in_a_row(int board[MAX_SIZE][MAX_SIZE],
+                          int size,
+                          int row,
+                          bool announce) {
+    int diffColor;
+    for (int i = 1; i < size-1; i++) {
+
+        if (board[row][i - 1] == board[row][i + 1]) {
+            diffColor = opposite_color(board[row][i - 1]);
+            mark_square_as(board, size, row, i, diffColor, announce);
+        }
+
+        else if (board[row][i] == board[row][i + 1]) {
+            diffColor = opposite_color(board[row][i]);
+            mark_square_as(board, size, row, i - 1, diffColor, announce);
+        }
+
+        else if (board[row][i] == board[row][i + 1]) {
+            diffColor = opposite_color(board[row][i]);
+            mark_square_as(board, size, row, i + 2, diffColor, announce);
+        }
+        return;
+    }
+}
+
+void solve_three_in_a_column(int board[MAX_SIZE][MAX_SIZE],
+                             int size,
+                             int col,
+                             bool announce) {
+    int diffColor;
+    for (int i = 0; i < size; i++) {
+        if (board[col][i - 1] == board[col][i + 1]) {
+            diffColor = opposite_color(board[col][i - 1]);
+            mark_square_as(board, size, i, col, diffColor, announce);
+        }
+
+        else if (board[col][i] == board[col][i + 1]) {
+            diffColor = opposite_color(board[col][i]);
+            mark_square_as(board, size, i - 1, col, diffColor, announce);
+        }
+
+        else if (board[col][i] == board[col][i + 1]) {
+            diffColor = opposite_color(board[col][i]);
+            mark_square_as(board, size, i + 2, col, diffColor, announce);
+        }
+        return;
+    }
+}
+
+
+void solve_balance_row(int board[MAX_SIZE][MAX_SIZE],
+                       int size,
+                       int row,
+                       bool announce) {
+    int numRed = 0;
+    int numBlue = 0;
+    for (int i = 0; i < size; i++) {
+        if (board[row][i] == RED) {
+            numRed++;
+        }
+        else if (board[row][i] == BLUE) {
+            numBlue++;
+        }
+        if (numRed == (size / 2)) {
+            for (int j = 0; j < size; j++) {
+                if (board[row][j] == UNKNOWN) {
+                    mark_square_as(board, size, row, j, BLUE, announce);
+                }
+
+            }
+        }
+        if (numBlue == (size / 2)) {
+            for (int k = 0; k < size; k++) {
+                if (board[row][k] == UNKNOWN) {
+                    mark_square_as(board, size, row, k, RED, announce);
+                }
+            }
+        }
+        return;
+    }
+}
+
+void solve_balance_column(int board[MAX_SIZE][MAX_SIZE],
+                          int size,
+                          int col,
+                          bool announce) {
+    int numRed = 0;
+    int numBlue = 0;
+    for (int i = 0; i < size; i++) {
+        if (board[col][i] == RED) {
+            numRed++;
+        }
+        else if (board[col][i] == BLUE) {
+            numBlue++;
+        }
+    }
+    if (numRed == size / 2) {
+        for (int j = 0; j < size; j++) {
+            if (board[col][j] == UNKNOWN) {
+                mark_square_as(board, size, j, col, BLUE, announce);
+            }
+        }
+    }
+    if (numBlue == size / 2) {
+        for (int k = 0; k < size; k++) {
+            if (board[col][k] == UNKNOWN) {
+                mark_square_as(board, size, k, col, RED, announce);
+            }
+        }
+    }
+    return;
+
+}
