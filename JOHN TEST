@@ -1,20 +1,137 @@
+/**
+ * test.cpp
+ * Project UID 5557cbe19b6ff413629a3743c503275413233136
+ *
+ * EECS 183
+ * Project 3: 0h h1 Test Suite
+ * Fall 2019
+ *
+ * Jiyang Zhou, Ana Ha
+ * jojiyang, anaha
+ *
+ * <#A description of the project here#>
+ */
+
 #include <iostream>
 #include "utility.h"
 #include "ohhi.h"
 
 void test_count_unknown_squares();
+
 void test_board_has_no_threes();
 void test_row_has_no_threes_of_color();
-
+void test_column_has_no_threes_of_color();
 void test_board_has_no_duplicates();
+void test_rows_are_different();
+void test_columns_are_different();
+
+void test_solve_three_in_a_row();
+void test_solve_three_in_a_column();
+void test_solve_balance_row();
+void test_solve_balance_column();
+
+void test_board_is_solved();
+void test_check_valid_input();
+void test_check_valid_move();
 // declare more test functions here
 
 void startTests() {
-    //test_board_has_no_threes();
-    //test_row_has_no_threes_of_color();
+    test_count_unknown_squares();
+    
+    test_board_has_no_threes();
+    test_row_has_no_threes_of_color();
+    test_column_has_no_threes_of_color();
     test_board_has_no_duplicates();
+    test_rows_are_different();
+    test_columns_are_different();
+    
+    test_solve_three_in_a_row();
+    test_solve_three_in_a_column();
+    test_solve_balance_row();
+    test_solve_balance_column();
+    
+    test_board_is_solved();
+    test_check_valid_input();
+    test_check_valid_move();
 }
 
+//declared here to test multiple functions
+string test_board_2[] = {"X-----",
+                         "X----X",
+                         "--O--X",
+                         "--O---",
+                         "X-----",
+                         "---X--"};
+
+string test_board_3[] = {"XXX---",
+                         "X----X",
+                         "--O--X",
+                         "--O---",
+                         "X-----",
+                         "---X--"};
+
+string test_board_4[] = {"-X--",
+                         "OOXX",
+                         "XXOO",
+                         "-O-X"};
+
+string test_board_5[] = {"O-XO-X-O",
+                         "X---OO--",
+                         "O-O--X-O",
+                         "XOX---OX",
+                         "--O--X--",
+                         "XO---O--",
+                         "XXOOX--O",
+                         "O--O-X--"};
+
+string test_board_6[] = {"XO",
+                         "OX"};
+
+string test_board_7[] = {"-X--",
+                         "OOXX",
+                         "XXOO",
+                         "OOXX"};
+
+string test_board_8[] = {"-X--",
+                         "OOXX",
+                         "XXOO",
+                         "OO-X"};
+
+string test_board_9[] = {"X-----",
+                         "X----X",
+                         "X-O--X",
+                         "--O---",
+                         "------",
+                         "---X--"};
+
+string test_board_10[] = {"-XOO",
+                          "OOXX",
+                          "XXOO",
+                          "O-XX"};
+
+string test_board_11[] = {"X-----",
+                          "X----X",
+                          "O-O--X",
+                          "--O---",
+                          "X-----",
+                          "---X--"};
+
+string test_board_12[] = {"X-----",
+                          "X----X",
+                          "OXO--X",
+                          "--O---",
+                          "X-----",
+                          "---X--"};
+
+string test_board_13[] = {"----",
+                          "XX--",
+                          "-XX-",
+                          "--X-"};
+
+string test_board_14[] = {"----",
+                          "XXO-",
+                          "-XX-",
+                          "--X-"};
 
 void test_count_unknown_squares() {
     int board[MAX_SIZE][MAX_SIZE];
@@ -28,55 +145,212 @@ void test_count_unknown_squares() {
     read_board_from_string(board, test_board_1, size_1);
     cout << count_unknown_squares(board, size_1) << endl;
 
-    // add more tests here
+    size_1 = 6;
+    read_board_from_string(board, test_board_2, size_1);
+    cout << count_unknown_squares(board, size_1) << endl;
+    
+    size_1 = 6;
+    read_board_from_string(board, test_board_3, size_1);
+    cout << count_unknown_squares(board, size_1) << endl;
+    
+    size_1 = 4;
+    read_board_from_string(board, test_board_4, size_1);
+    cout << count_unknown_squares(board, size_1) << endl;
+    
+    size_1 = 8;
+    read_board_from_string(board, test_board_5, size_1);
+    cout << count_unknown_squares(board, size_1) << endl;
+    
+    size_1 = 2;
+    read_board_from_string(board, test_board_6, size_1);
+    cout << count_unknown_squares(board, size_1) << endl;
 }
-
-string test_board_1[] = {"X-----",
-                         "X----X",
-                         "--O--X",
-                         "--O---",
-                         "X-----",
-                         "---X--"};
-
-string test_board_2[] = {"XXX---",
-                         "X----X",
-                         "--O--X",
-                         "--O---",
-                         "X-----",
-                         "---X--"};
 
 void test_board_has_no_threes() {
     int board[MAX_SIZE][MAX_SIZE];
     
     int size_1 = 6;
-    read_board_from_string(board, test_board_1, size_1);
+    read_board_from_string(board, test_board_2, size_1);
     cout << "Expected: 1 " << "Actual: ";
     cout << board_has_no_threes(board, size_1)<< endl;
     
     int size_2 = 6;
-    read_board_from_string(board, test_board_2, size_2);
+    read_board_from_string(board, test_board_3, size_2);
     cout << "Expected: 0 " << "Actual: ";
     cout << board_has_no_threes(board, size_2)<< endl;
+    
+    int size_3 = 6;
+    read_board_from_string(board, test_board_9, size_3);
+    cout << "Expected: 0 " << "Actual: ";
+    cout << board_has_no_threes(board, size_3)<< endl;
 }
 
 void test_row_has_no_threes_of_color() {
     int board[MAX_SIZE][MAX_SIZE];
     
     int size = 6;
-    read_board_from_string(board, test_board_1, size);
+    read_board_from_string(board, test_board_2, size);
     cout << "Expected: 1 " << "Actual: ";
+    cout << row_has_no_threes_of_color(board, size, 0, RED) << endl;
+    
+    read_board_from_string(board, test_board_3, size);
+    cout << "Expected: 0 " << "Actual: ";
     cout << row_has_no_threes_of_color(board, size, 0, RED) << endl;
 }
 
-void test_col_has_no_threes_of_color() {
+void test_column_has_no_threes_of_color() {
     int board[MAX_SIZE][MAX_SIZE];
     
     int size = 6;
-    read_board_from_string(board, test_board_1, size);
+    read_board_from_string(board, test_board_2, size);
     cout << "Expected: 1 " << "Actual: ";
     cout << col_has_no_threes_of_color(board, size, 0, RED) << endl;
+    
+    int size_3 = 6;
+    read_board_from_string(board, test_board_9, size_3);
+    cout << "Expected: 0 " << "Actual: ";
+    cout << board_has_no_threes(board, size_3)<< endl;
 }
 
 void test_board_has_no_duplicates() {
+    int board[MAX_SIZE][MAX_SIZE];
     
+    int size = 4;
+    read_board_from_string(board, test_board_4, size);
+    cout << "Expected: 1 " << "Actual: ";
+    cout << board_has_no_duplicates(board, size) << endl;
+    
+    read_board_from_string(board, test_board_7, size);
+    cout << "Expected: 0 " << "Actual: ";
+    cout << board_has_no_duplicates(board, size) << endl;
+    
+    read_board_from_string(board, test_board_10, size);
+    cout << "Expected: 0 " << "Actual: ";
+    cout << board_has_no_duplicates(board, size) << endl;
+}
+
+void test_rows_are_different() {
+    int board[MAX_SIZE][MAX_SIZE];
+    
+    int size = 4;
+    read_board_from_string(board, test_board_4, size);
+    cout << "Expected: 1 " << "Actual: ";
+    cout << board_has_no_duplicates(board, size) << endl;
+    
+    read_board_from_string(board, test_board_7, size);
+    cout << "Expected: 0 " << "Actual: ";
+    cout << board_has_no_duplicates(board, size) << endl;
+}
+
+void test_columns_are_different() {
+    int board[MAX_SIZE][MAX_SIZE];
+    
+    int size = 4;
+    read_board_from_string(board, test_board_4, size);
+    cout << "Expected: 1 " << "Actual: ";
+    cout << board_has_no_duplicates(board, size) << endl;
+    
+    read_board_from_string(board, test_board_10, size);
+    cout << "Expected: 0 " << "Actual: ";
+    cout << board_has_no_duplicates(board, size) << endl;
+    
+}
+
+void test_solve_three_in_a_row() {
+    int board[MAX_SIZE][MAX_SIZE];
+    
+    int size = 4;
+    read_board_from_string(board, test_board_13, size);
+    cout << "Expected: marking (2, C) as O" << endl;
+    cout << "Actual: ";
+    solve_three_in_a_row(board, size, 1, true);
+    
+    read_board_from_string(board, test_board_14, size);
+    cout << "Expected: " << endl;
+    cout << "marking (3, A) as O" << endl;
+    cout << "marking (3, D) as O" << endl;
+    cout << "Actual: " << endl;
+    solve_three_in_a_row(board, size, 2, true);
+}
+
+void test_solve_three_in_a_column() {
+    int board[MAX_SIZE][MAX_SIZE];
+    
+    int size = 6;
+    read_board_from_string(board, test_board_2, size);
+    cout << "Expected: marking (3, A) as O" << endl;
+    cout << "Actual: ";
+    solve_three_in_a_column(board, size, 0, true);
+    
+    read_board_from_string(board, test_board_11, size);
+    cout << "Expected: " << endl;
+    cout << "marking (2, C) as X" << endl;
+    cout << "marking (5, C) as X" << endl;
+    cout << "Actual: " << endl;
+    solve_three_in_a_column(board, size, 2, true);
+}
+
+void test_solve_balance_row() {
+    int board[MAX_SIZE][MAX_SIZE];
+    
+    int size = 4;
+    read_board_from_string(board, test_board_13, size);
+    cout << "Expected: " << endl;
+    cout << "marking (2, C) as O" << endl;
+    cout << "marking (2, D) as O" << endl;
+    cout << "Actual: " << endl;
+    solve_balance_row(board, size, 1, true);
+}
+
+void test_solve_balance_column() {
+    int board[MAX_SIZE][MAX_SIZE];
+    
+    int size = 6;
+    read_board_from_string(board, test_board_11, size);
+    cout << "Expected: " << endl;
+    cout << "marking (4, A) as O" << endl;
+    cout << "marking (6, A) as O" << endl;
+    cout << "Actual: " << endl;
+    solve_balance_column(board, size, 0, true);
+}
+
+void test_board_is_solved() {
+    int board[MAX_SIZE][MAX_SIZE];
+    
+    int size = 2;
+    read_board_from_string(board, test_board_6, size);
+    cout << "Expected: 1 " << "Actual: " << board_is_solved(board, size) << endl;
+}
+
+void test_check_valid_input() {
+    
+    int size = 2;
+    int row = 0;
+    int col = 0;
+    cout << "Expected: Sorry, that's not a valid input. " << endl;
+    cout << "0" << endl;
+    cout << "Actual: " << endl;
+    cout << check_valid_input(size, 0, 'a', 'o', row, col) << endl;
+}
+
+void test_check_valid_move() {
+    int original[MAX_SIZE][MAX_SIZE];
+    int current[MAX_SIZE][MAX_SIZE];
+    
+    int size = 4;
+    read_board_from_string(original, test_board_4, size);
+    read_board_from_string(current, test_board_4, size);
+    cout << "Expected: 1 " << "Actual: ";
+    cout << check_valid_move(original, current, size, 3, 0, RED) << endl;
+    
+    read_board_from_string(original, test_board_4, size);
+    read_board_from_string(current, test_board_8, size);
+    cout << "Expected: Sorry, that move violates a rule. " << "Actual: ";
+    cout << check_valid_move(original, current, size, 3, 2, BLUE) << endl;
+    
+    size = 6;
+    read_board_from_string(original, test_board_2, size);
+    read_board_from_string(current, test_board_2, size);
+    cout << "Expected: Sorry, that move violates a rule. " << "Actual: ";
+    cout << check_valid_move(original, current, size, 1, 2, BLUE) << endl;
 }
