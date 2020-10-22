@@ -17,6 +17,7 @@
 #include "utility.h"
 #include "ohhi.h"
 
+
 /**
  * --------------------------------------------------------
  * ---------- UTILITY FUNCTIONS ---------------------------
@@ -41,20 +42,57 @@ int count_unknown_squares(const int board[MAX_SIZE][MAX_SIZE], int size) {
  * --------- VALIDITY CHECKING FUNCTIONS ------------------
  * --------------------------------------------------------
  */
+bool row_is_equal(const int board[MAX_SIZE][MAX_SIZE], int size, int row) {
+    int red_count = 0;
+    int blue_count = 0;
+
+    // sum the contents of the row
+    for (int col = 0; col < size; col++) {
+        if (board[row][col] == RED) red_count++;
+        else if (board[row][col] == BLUE) blue_count++;
+    }
+
+    // check if it's possible to solve the row
+    if (red_count > size / 2 || blue_count > size / 2) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+bool col_is_equal(const int board[MAX_SIZE][MAX_SIZE], int size, int col) {
+    int red_count = 0;
+    int blue_count = 0;
+
+    // sum the contents of the column
+    for (int row = 0; row < size; row++) {
+        if (board[row][col] == RED) red_count++;
+        else if (board[row][col] == BLUE) blue_count++;
+    }
+
+    // check if it's possible to solve the column
+    if (red_count > size / 2 || blue_count > size / 2) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+bool board_is_equal(const int board[MAX_SIZE][MAX_SIZE], int size) {
+    for (int i = 0; i < size; i++) {
+        // if any row or column cannot be balanced, the board is invalid
+        if (!row_is_equal(board, size, i) ||
+            !col_is_equal(board, size, i)) {
+            return false;
+        }
+    }
+    return true;
+}
 
 bool row_has_no_threes_of_color(const int board[MAX_SIZE][MAX_SIZE],
                                 int size,
                                 int row,
                                 int color) {
-    if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
-        return false;
-    }
-    if (row < 0 || row > size) {
-        return false;
-    }
-    if (color != RED && color != BLUE) {
-        return false;
-    }
     for (int col = 0; col < size - 2; col++) {
         if (board[row][col] == board[row][col + 1] &&
             board[row][col + 1] == board[row][col + 2] &&
@@ -224,8 +262,6 @@ void solve_three_in_a_row(int board[MAX_SIZE][MAX_SIZE],
                 }
             }
         }
-    }
-    for (int i = 1; i < size - 1; i++) {
         if (board[row][i - 1] == board[row][i + 1] &&
             board[row][i - 1] != UNKNOWN) {
             if (board[row][i - 1] == RED) {
@@ -240,6 +276,7 @@ void solve_three_in_a_row(int board[MAX_SIZE][MAX_SIZE],
             }
         }
     }
+    
     return;
 }
 
@@ -299,8 +336,6 @@ void solve_three_in_a_column(int board[MAX_SIZE][MAX_SIZE],
                 }
             }
         }
-    }
-    for (int i = 1; i < size - 1; i++) {
         if (board[i - 1][col] == board[i + 1][col] &&
             board[i + 1][col] != UNKNOWN) {
             if (board[i - 1][col] == RED) {
@@ -315,6 +350,7 @@ void solve_three_in_a_column(int board[MAX_SIZE][MAX_SIZE],
             }
         }
     }
+    
     return;
 }
 
@@ -427,6 +463,9 @@ bool board_is_solved(const int board[MAX_SIZE][MAX_SIZE], int size) {
             }
         }
     }
+    if (!board_is_equal(board, size)) {
+        return false;
+    }
     if (!board_has_no_threes(board, size)) {
         return false;
     }
@@ -460,6 +499,8 @@ bool check_valid_input(int size, int row_input, char col_input,
 bool check_valid_move(const int original_board[MAX_SIZE][MAX_SIZE],
                       const int current_board[MAX_SIZE][MAX_SIZE],
                       int size, int row, int col, int color) {
+    int current[MAX_SIZE][MAX_SIZE];
+    
     if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
         return false;
     }
@@ -471,11 +512,21 @@ bool check_valid_move(const int original_board[MAX_SIZE][MAX_SIZE],
         cout << "Sorry, original squares cannot be changed." << endl;
         return false;
     }
-    if (!board_has_no_threes(current_board, size)) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            current[i][j] = current_board[i][j];
+        }
+    }
+    current[row][col] = color;
+    if (!board_is_equal(current, size)) {
         cout << "Sorry, that move violates a rule." << endl;
         return false;
     }
-    if (!board_has_no_duplicates(current_board, size)) {
+    if (!board_has_no_threes(current, size)) {
+        cout << "Sorry, that move violates a rule." << endl;
+        return false;
+    }
+    if (!board_has_no_duplicates(current, size)) {
         cout << "Sorry, that move violates a rule." << endl;
         return false;
     }
