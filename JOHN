@@ -111,19 +111,15 @@ bool rows_are_different(const int board[MAX_SIZE][MAX_SIZE],
     if (row1 < 0 || row1 > size || row2 < 0 || row2 > size) {
         return false;
     }
-    int rows_matched = 0;
     for (int i = 0; i < size; i++) {
-        if (board[row1][i] == board[row2][i]) {
-            rows_matched++;
-        }
         if (board[row1][i] == UNKNOWN || board[row2][i] == UNKNOWN) {
             return true;
         }
+        if (board[row1][i] != board[row2][i]) {
+            return true;
+        }
     }
-    if (rows_matched == size) {
-        return false;
-    }
-    return true;
+    return false;
 }
 
 bool cols_are_different(const int board[MAX_SIZE][MAX_SIZE],
@@ -136,31 +132,29 @@ bool cols_are_different(const int board[MAX_SIZE][MAX_SIZE],
     if (col1 < 0 || col1 > size || col2 < 0 || col2 > size) {
         return false;
     }
-    int cols_matched = 0;
     for (int i = 0; i < size; i++) {
-        if (board[i][col1] == board[i][col2]) {
-            cols_matched++;
-        }
         if (board[i][col1] == UNKNOWN || board[i][col2] == UNKNOWN) {
             return true;
         }
+        if (board[i][col1] != board[i][col2]) {
+            return true;
+        }
     }
-    if (cols_matched == size) {
-        return false;
-    }
-    return true;
+    return false;
 }
 
 bool board_has_no_duplicates(const int board[MAX_SIZE][MAX_SIZE], int size) {
     if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
         return false;
     }
-    for (int i = 0; i < size - 1; i++) {
-        if (!rows_are_different(board, size, i, i + 1)) {
-            return false;
-        }
-        if (!cols_are_different(board, size, i, i + 1)) {
-            return false;
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            if (i != j && !rows_are_different(board, size, i, j)) {
+                return false;
+            }
+            if (i != j && !cols_are_different(board, size, i, j)) {
+                return false;
+            }
         }
     }
     return true;
@@ -459,7 +453,7 @@ bool check_valid_input(int size, int row_input, char col_input,
         return false;
     }
     row = row_input - 1;
-    col = col_input;
+    col = toupper(col_input) - 65;
     return true;
 }
 
@@ -469,10 +463,11 @@ bool check_valid_move(const int original_board[MAX_SIZE][MAX_SIZE],
     if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
         return false;
     }
-    if (row < 0 || row > size || col < 0 || col > size) {
+    if (row < 0 || row > size || col < 0 ||
+        col > size) {
         return false;
     }
-    if (original_board[row][col] != UNKNOWN) {
+    if (original_board[row][col] == BLUE || original_board[row][col] == RED) {
         cout << "Sorry, original squares cannot be changed." << endl;
         return false;
     }
