@@ -1,8 +1,38 @@
+/**
+ * ohhi.cpp
+ * Project UID 5557cbe19b6ff413629a3743c503275413233136
+ *
+ * EECS 183
+ * Project 3: 0h h1
+ * Fall 2020
+ *
+ * Jiyang Zhou, Ana Ha
+ * <jojiyang, anaha>
+ *
+ * <Project 3: this application will read, 
+    check, solve and play basic instances of 0h h1>
+ */
+
+#include <iostream>
+#include <cctype>
+#include "utility.h"
+#include "ohhi.h"
+
+
+ /**
+  * --------------------------------------------------------
+  * ---------- UTILITY FUNCTIONS ---------------------------
+  * --------------------------------------------------------
+  */
+
 int count_unknown_squares(const int board[MAX_SIZE][MAX_SIZE], int size) {
     int unknownSquares = 0;
+
+    //counts and stores number of unknown squares
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
             if (board[i][j] == UNKNOWN) {
+                //increments number of unknown squares
                 unknownSquares++;
             }
         }
@@ -11,118 +41,611 @@ int count_unknown_squares(const int board[MAX_SIZE][MAX_SIZE], int size) {
 }
 
 
-//SOLVE FUNCTIONS
+/**
+ * --------------------------------------------------------
+ * --------- VALIDITY CHECKING FUNCTIONS ------------------
+ * --------------------------------------------------------
+ */
+bool row_is_equal(const int board[MAX_SIZE][MAX_SIZE], int size, int row) {
+    int redCount = 0;
+    int blueCount = 0;
 
-void solve_three_in_a_row(int board[MAX_SIZE][MAX_SIZE],
-                          int size,
-                          int row,
-                          bool announce) {
-    int diffColor;
-    for (int i = 1; i < size-1; i++) {
+    // sum the contents of the row
+    for (int col = 0; col < size; col++) {
+        if (board[row][col] == RED) redCount++;
+        else if (board[row][col] == BLUE) blueCount++;
+    }
 
-        if (board[row][i - 1] == board[row][i + 1]) {
-            diffColor = opposite_color(board[row][i - 1]);
-            mark_square_as(board, size, row, i, diffColor, announce);
-        }
-
-        else if (board[row][i] == board[row][i + 1]) {
-            diffColor = opposite_color(board[row][i]);
-            mark_square_as(board, size, row, i - 1, diffColor, announce);
-        }
-
-        else if (board[row][i] == board[row][i + 1]) {
-            diffColor = opposite_color(board[row][i]);
-            mark_square_as(board, size, row, i + 2, diffColor, announce);
-        }
-        return;
+    // check if it's possible to solve the row
+    if (redCount > size / 2 || blueCount > size / 2) {
+        return false;
+    }
+    else {
+        return true;
     }
 }
 
-void solve_three_in_a_column(int board[MAX_SIZE][MAX_SIZE],
-                             int size,
-                             int col,
-                             bool announce) {
-    int diffColor;
+bool col_is_equal(const int board[MAX_SIZE][MAX_SIZE], int size, int col) {
+    int redCount = 0;
+    int blueCount = 0;
+
+    // sum the contents of the column
+    for (int row = 0; row < size; row++) {
+        if (board[row][col] == RED) redCount++;
+        else if (board[row][col] == BLUE) blueCount++;
+    }
+
+    // check if it's possible to solve the column
+    if (redCount > size / 2 || blueCount > size / 2) {
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+bool board_is_equal(const int board[MAX_SIZE][MAX_SIZE], int size) {
+
     for (int i = 0; i < size; i++) {
-        if (board[col][i - 1] == board[col][i + 1]) {
-            diffColor = opposite_color(board[col][i - 1]);
-            mark_square_as(board, size, i, col, diffColor, announce);
+        // if any row or column cannot be balanced, the board is invalid
+        if (!row_is_equal(board, size, i) ||
+            !col_is_equal(board, size, i)) {
+            return false;
         }
+    }
+    return true;
+}
 
-        else if (board[col][i] == board[col][i + 1]) {
-            diffColor = opposite_color(board[col][i]);
-            mark_square_as(board, size, i - 1, col, diffColor, announce);
-        }
+bool row_has_no_threes_of_color(const int board[MAX_SIZE][MAX_SIZE],
+    int size,
+    int row,
+    int color) {
 
-        else if (board[col][i] == board[col][i + 1]) {
-            diffColor = opposite_color(board[col][i]);
-            mark_square_as(board, size, i + 2, col, diffColor, announce);
+    for (int col = 0; col < size - 2; col++) {
+        //if there are three of a color in the same row, board is invalid
+        if (board[row][col] == board[row][col + 1] &&
+            board[row][col + 1] == board[row][col + 2] &&
+            board[row][col] == color) {
+            return false;
         }
+    }
+    return true;
+}
+
+bool col_has_no_threes_of_color(const int board[MAX_SIZE][MAX_SIZE],
+    int size,
+    int col,
+    int color) {
+
+    for (int row = 0; row < size - 2; row++) {
+        //if there are three of a color in the same column, board is invalid
+        if (board[row][col] == board[row + 1][col] &&
+            board[row + 1][col] == board[row + 2][col] &&
+            board[row][col] == color) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool board_has_no_threes(const int board[MAX_SIZE][MAX_SIZE], int size) {
+    /*if the board is greater than max size,
+                or not postive, 
+                or odd, then board is invalid */
+    if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
+        return false;
+    }
+
+   
+    for (int i = 0; i < size; i++) {
+        if (!row_has_no_threes_of_color(board, size, i, RED)) {
+            return false;
+        }
+        if (!row_has_no_threes_of_color(board, size, i, BLUE)) {
+            return false;
+        }
+        if (!col_has_no_threes_of_color(board, size, i, RED)) {
+            return false;
+        }
+        if (!col_has_no_threes_of_color(board, size, i, BLUE)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool rows_are_different(const int board[MAX_SIZE][MAX_SIZE],
+    int size,
+    int row1,
+    int row2) {
+
+    if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
+        return false;
+    }
+    if (row1 < 0 || row1 > size || row2 < 0 || row2 > size) {
+        return false;
+    }
+
+
+    for (int i = 0; i < size; i++) {
+       // boards are still valid if rows are unknown
+        if (board[row1][i] == UNKNOWN || board[row2][i] == UNKNOWN) {
+            return true;
+        }
+       //boards are valid if rows are not same
+        if (board[row1][i] != board[row2][i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool cols_are_different(const int board[MAX_SIZE][MAX_SIZE],
+    int size,
+    int col1,
+    int col2) {
+
+    if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
+        return false;
+    }
+    if (col1 < 0 || col1 > size || col2 < 0 || col2 > size) {
+        return false;
+    }
+
+
+    for (int i = 0; i < size; i++) {
+        if (board[i][col1] == UNKNOWN || board[i][col2] == UNKNOWN) {
+            return true;
+        }
+        if (board[i][col1] != board[i][col2]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool board_has_no_duplicates(const int board[MAX_SIZE][MAX_SIZE], int size) {
+
+    if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
+        return false;
+    }
+
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            if (i != j && !rows_are_different(board, size, i, j)) {
+                return false;
+            }
+            if (i != j && !cols_are_different(board, size, i, j)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
+/**
+ * --------------------------------------------------------
+ * ---------- SOLVING FUNCTIONS ---------------------------
+ * --------------------------------------------------------
+ */
+
+void solve_three_in_a_row(int board[MAX_SIZE][MAX_SIZE],
+    int size,
+    int row,
+    bool announce) {
+    // variable c is used to store the opposite color
+    int c;
+
+    if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
         return;
     }
+    if (row < 0 || row >= size) {
+        return;
+    }
+    if (!board_has_no_threes(board, size)) {
+        return;
+    }
+    if (!board_has_no_duplicates(board, size)) {
+        return;
+    }
+
+
+    for (int i = 0; i < size - 1; i++) {
+        if (board[row][i] == board[row][i + 1] &&
+            board[row][i] != UNKNOWN) {
+            if (board[row][i] == RED) {
+                //c stores the opposite color of board[row][i]
+                c = opposite_color(board[row][i]);
+                if (i == 0) {
+                    if (board[row][i + 2] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, row, i + 2, c, announce);
+                    }
+                }
+                else if (i == size - 2) {
+                    if (board[row][i - 1] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, row, i - 1, c, announce);
+                    }
+                }
+                else {
+                    if (board[row][i - 1] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, row, i - 1, c, announce);
+                    }
+                    if (board[row][i + 2] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, row, i + 2, c, announce);
+                    }
+                }
+            }
+            if (board[row][i] == BLUE) {
+                //c stores the opposite color of board[row][i]
+                c = opposite_color(board[row][i]);
+                if (i == 0) {
+                    if (board[row][i + 2] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, row, i + 2, c, announce);
+                    }
+                }
+                else if (i == size - 2) {
+                    if (board[row][i - 1] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, row, i - 1, c, announce);
+                    }
+                }
+                else {
+                    if (board[row][i - 1] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, row, i - 1, c, announce);
+                    }
+                    if (board[row][i + 2] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, row, i + 2, c, announce);
+
+                    }
+                }
+            }
+        }
+        if (board[row][i - 1] == board[row][i + 1] &&
+            board[row][i - 1] != UNKNOWN) {
+            if (board[row][i - 1] == RED) {
+                //c stores opposite color of board[row][i - 1]
+                c = opposite_color(board[row][i - 1]);
+                if (board[row][i] == UNKNOWN) {
+                    //marks the unknown square with the opposite color
+                    mark_square_as(board, size, row, i, c, announce);
+                }
+            }
+            if (board[row][i - 1] == BLUE) {
+                //c stores opposite color of board[row][]i - 1]
+                c = opposite_color(board[row][i - 1]);
+                if (board[row][i] == UNKNOWN) {
+                    //marks the unknown square with the opposite color
+                    mark_square_as(board, size, row, i, c, announce);
+                }
+            }
+        }
+    }
+
+    return;
+}
+
+
+void solve_three_in_a_column(int board[MAX_SIZE][MAX_SIZE],
+    int size,
+    int col,
+    bool announce) {
+
+    //variable c stores the opposite color of presented tile 
+    int c;
+
+    if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
+        return;
+    }
+    if (col < 0 || col >= size) {
+        return;
+    }
+    if (!board_has_no_threes(board, size)) {
+        return;
+    }
+    if (!board_has_no_duplicates(board, size)) {
+        return;
+    }
+
+
+    for (int i = 0; i < size - 1; i++) {
+        if (board[i][col] == board[i + 1][col] &&
+            board[i][col] != UNKNOWN) {
+            if (board[i][col] == RED) {
+                //c stores opposite color of board[i][col]
+                c = opposite_color(board[i][col]);
+                if (i == 0) {
+                    if (board[i + 2][col] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, i + 2, col, c, announce);
+                    }
+                }
+                else if (i == size - 2) {
+                    if (board[i - 1][col] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, i - 1, col, c, announce);
+                    }
+                }
+                else {
+                    if (board[i - 1][col] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, i - 1, col, c, announce);
+                    }
+                    if (board[i + 2][col] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, i + 2, col, c, announce);
+                    }
+                }
+            }
+            if (board[i][col] == BLUE) {
+                //c stores opposite color of board[i][col]
+                c = opposite_color(board[i][col]);
+                if (i == 0) {
+                    if (board[i + 2][col] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, i + 2, col, c, announce);
+                    }
+                }
+                else if (i == size - 2) {
+                    if (board[i - 1][col] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, i - 1, col, c, announce);
+                    }
+                }
+                else {
+                    if (board[i - 1][col] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, i - 1, col, c, announce);
+                    }
+                    if (board[i + 2][col] == UNKNOWN) {
+                        //marks the unknown square with the opposite color
+                        mark_square_as(board, size, i + 2, col, c, announce);
+                    }
+                }
+            }
+        }
+        if (board[i - 1][col] == board[i + 1][col] &&
+            board[i + 1][col] != UNKNOWN) {
+            if (board[i - 1][col] == RED) {
+                //c stores opposite color of board[i - 1][col]
+                c = opposite_color(board[i - 1][col]);
+                if (board[i][col] == UNKNOWN) {
+                    //marks the unknown square with the opposite color
+                    mark_square_as(board, size, i, col, c, announce);
+                }
+            }
+            if (board[i - 1][col] == BLUE) {
+                //c stores opposite color of board[i - 1][col]
+                c = opposite_color(board[i - 1][col]);
+                if (board[i][col] == UNKNOWN) {
+                    //marks the unknown square with the opposite color
+                    mark_square_as(board, size, i, col, c, announce);
+                }
+            }
+        }
+    }
+
+    return;
 }
 
 
 void solve_balance_row(int board[MAX_SIZE][MAX_SIZE],
-                       int size,
-                       int row,
-                       bool announce) {
-    int numRed = 0;
+    int size,
+    int row,
+    bool announce) {
+
+    if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
+        return;
+    }
+    if (row < 0 || row >= size) {
+        return;
+    }
+    if (!board_has_no_threes(board, size)) {
+        return;
+    }
+    if (!board_has_no_duplicates(board, size)) {
+        return;
+    }
+
+    
     int numBlue = 0;
+    int numRed = 0;
+
     for (int i = 0; i < size; i++) {
+        if (board[row][i] == BLUE) {
+            numBlue++; 
+        }
         if (board[row][i] == RED) {
             numRed++;
         }
-        else if (board[row][i] == BLUE) {
-            numBlue++;
-        }
-        if (numRed == (size / 2)) {
-            for (int j = 0; j < size; j++) {
-                if (board[row][j] == UNKNOWN) {
-                    mark_square_as(board, size, row, j, BLUE, announce);
-                }
-
-            }
-        }
-        if (numBlue == (size / 2)) {
-            for (int k = 0; k < size; k++) {
-                if (board[row][k] == UNKNOWN) {
-                    mark_square_as(board, size, row, k, RED, announce);
-                }
-            }
-        }
-        return;
     }
-}
 
-void solve_balance_column(int board[MAX_SIZE][MAX_SIZE],
-                          int size,
-                          int col,
-                          bool announce) {
-    int numRed = 0;
-    int numBlue = 0;
-    for (int i = 0; i < size; i++) {
-        if (board[col][i] == RED) {
-            numRed++;
-        }
-        else if (board[col][i] == BLUE) {
-            numBlue++;
+
+    if (numBlue == size / 2) {
+        for (int i = 0; i < size; i++) {
+            if (board[row][i] == UNKNOWN) {
+                mark_square_as(board, size, row, i, RED, announce);
+            }
         }
     }
     if (numRed == size / 2) {
-        for (int j = 0; j < size; j++) {
-            if (board[col][j] == UNKNOWN) {
-                mark_square_as(board, size, j, col, BLUE, announce);
-            }
-        }
-    }
-    if (numBlue == size / 2) {
-        for (int k = 0; k < size; k++) {
-            if (board[col][k] == UNKNOWN) {
-                mark_square_as(board, size, k, col, RED, announce);
+        for (int i = 0; i < size; i++) {
+            if (board[row][i] == UNKNOWN) {
+                mark_square_as(board, size, row, i, BLUE, announce);
             }
         }
     }
     return;
-
 }
+
+void solve_balance_column(int board[MAX_SIZE][MAX_SIZE],
+    int size,
+    int col,
+    bool announce) {
+    if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
+
+        return;
+    }
+    if (col < 0 || col >= size) {
+
+        return;
+    }
+    if (!board_has_no_threes(board, size)) {
+
+        return;
+    }
+    if (!board_has_no_duplicates(board, size)) {
+        return;
+    }
+
+    //variable c stores the opposite color of presented tile
+    
+    int numBlue = 0;
+    int numRed = 0;
+
+    for (int i = 0; i < size; i++) {
+        if (board[i][col] == BLUE) {
+            numBlue++;
+            //c stores opposite color of board[i][col]
+           
+        }
+        if (board[i][col] == RED) {
+            numRed++;
+            //c stores opposite color of board[i][col]
+            
+        }
+    }
+
+    //Checks to see if there are enough BLUE tiles
+    if (numBlue == size / 2) {
+        for (int i = 0; i < size; i++) {
+            //if there are enough blue tiles, fills unknowns with red
+            if (board[i][col] == UNKNOWN) {
+                mark_square_as(board, size, i, col, RED, announce);
+            }
+        }
+    }
+    //checks to see there are enough RED tiles
+    if (numRed == size / 2) {
+        for (int i = 0; i < size; i++) {
+            //if there are enough red tiles, fills unknowns with blue
+            if (board[i][col] == UNKNOWN) {
+                mark_square_as(board, size, i, col, BLUE, announce);
+            }
+        }
+    }
+    return;
+}
+
+
+/**
+ * --------------------------------------------------------
+ * ---------- GAMEPLAY FUNCTIONS --------------------------
+ * --------------------------------------------------------
+ */
+
+bool board_is_solved(const int board[MAX_SIZE][MAX_SIZE], int size) {
+    //checks validity of board
+    if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
+        return false;
+    }
+    
+    //checks validity of board
+    if (board_is_valid(board, size)) {
+         for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                //if board tile is neither RED or BLUE, board is invalid
+                if (board[i][j] != RED && board[i][j] != BLUE) {
+                    return false;
+                }
+            }
+         }
+         // if board is not equal, board is invalid
+        if (!board_is_equal(board, size)) {
+            return false;
+        }
+         return true;
+    }
+    return false;
+}
+
+bool check_valid_input(int size, int row_input, char col_input,
+    char color_char, int& row, int& col) {
+
+    //checks validity of row input
+    if (row_input < 1 || row_input > size) {
+            cout << "Sorry, that's not a valid input." << endl;
+        return false;
+    }
+    //checks validity of column input
+    if (toupper(col_input) < 'A' || toupper(col_input) > ('A' + size - 1)) {
+            cout << "Sorry, that's not a valid input." << endl;
+        return false;
+    }
+    //checks validity of color input
+    if (toupper(color_char) != RED_LETTER &&
+        toupper(color_char) != BLUE_LETTER &&
+        toupper(color_char) != UNKNOWN_LETTER) {
+            cout << "Sorry, that's not a valid input." << endl;
+        return false;
+    }
+
+    row = row_input - 1;
+    col = toupper(col_input) - 65;
+    return true;
+}
+
+bool check_valid_move(const int original_board[MAX_SIZE][MAX_SIZE],
+    const int current_board[MAX_SIZE][MAX_SIZE],
+    int size, int row, int col, int color) {
+
+    int current[MAX_SIZE][MAX_SIZE];
+
+    //checks size of board
+    if (size > MAX_SIZE || size < 0 || size % 2 != 0) {
+        return false;
+        }
+    //checks that row and column to size 
+    if (row < 0 || row > size || col < 0 ||
+       col > size) {
+       return false;
+        }
+    //regulates original board colors
+    if (original_board[row][col] == BLUE || original_board[row][col] == RED) {
+        cout << "Sorry, original squares cannot be changed." << endl;
+        return false;
+    }
+
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+           current[i][j] = current_board[i][j];
+        }
+    }
+
+    current[row][col] = color;
+
+    //checks that the input move does extend pass the board
+    if (!board_is_equal(current, size)) {
+        cout << "Sorry, that move violates a rule." << endl;
+        return false;
+    }
+    //checks that the input move does not violate the "no three" rule
+    if (!board_has_no_threes(current, size)) {
+        cout << "Sorry, that move violates a rule." << endl;
+        return false;
+        }
+    //checks that the input move does not violate the "duplicates" rule
+    if (!board_has_no_duplicates(current, size)) {
+        cout << "Sorry, that move violates a rule." << endl;
+        return false;
+    }
+    return true;
+}
+ 
